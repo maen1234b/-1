@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GD Level Case Opener</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Открытие кейса уровней GD</h1>
+
+        <div class="case-container">
+            <div class="case" id="case">
+                <div class="case-content">
+                    <div class="level-name" id="levelName">Нажмите "Открыть кейс"</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="openCaseBtn" class="btn">Открыть кейс</button>
+
+        <div class="results">
+            <h2>Выпавшие уровни:</h2>
+            <div id="resultsList"></div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <p>Прогресс: <span id="progressText">0</span>/9</p>
+        </div>
+    </div>
+
+    <script>
+        // Группы уровней по цветам
+        const colorGroups = {
+            green: [
+                "Stereo Madness", "Back on Track", "Polargeist", "Dry Out",
+                "Base After Base", "Can't Let Go"
+            ],
+            yellow: [
+                "Jumper", "Time Machine", "Cycles", "Blast Processing",
+                "Xstep", "Electroman Adventures", "Theory of Everything",
+                "Geometrical Dominator", "Clutterfunk"
+            ],
+            red: [
+                "Hexagon Force", "Fingerdash", "Electrodynamix", "Dash"
+            ]
+        };
+
+        // Последовательность выпадения: сначала зелёные, потом жёлтые, потом красные
+        const levelSequence = ['green', 'green', 'green',
+                             'yellow', 'yellow', 'yellow',
+                             'red', 'red', 'red'];
+
+        // Счётчики
+        let openedCases = 0;
+        const maxCases = 9;
+        const results = [];
+
+        // Элементы DOM
+        const openCaseBtn = document.getElementById('openCaseBtn');
+        const caseElement = document.getElementById('case');
+        const levelName = document.getElementById('levelName');
+        const resultsList = document.getElementById('resultsList');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const body = document.body;
+
+        // Функция для получения случайного элемента из массива
+        function getRandomItem(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        // Функция определения цвета фона по уровню
+        function getBackgroundColor(level) {
+            if (colorGroups.green.includes(level)) return '#1a4f1a'; // тёмно‑зелёный
+            if (colorGroups.yellow.includes(level)) return '#5a4f00'; // тёмно‑жёлтый
+            if (colorGroups.red.includes(level)) return '#4f1a1a'; // тёмно‑красный
+            return '#1a1a2e'; // цвет по умолчанию
+        }
+
+        // Создание салюта
+        function createFireworks() {
+            const fireworksContainer = document.createElement('div');
+            fireworksContainer.className = 'fireworks';
+            document.body.appendChild(fireworksContainer);
+
+            for (let i = 0; i < 50; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                spark.style.left = Math.random() * 100 + 'vw';
+                spark.style.top = Math.random() * 100 + 'vh';
+                spark.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                spark.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                fireworksContainer.appendChild(spark);
+            }
+
+            setTimeout(() => {
+                document.body.removeChild(fireworksContainer);
+            }, 2000);
+        }
+
+        // Анимация открытия кейса
+        function animateCaseOpening() {
+            caseElement.classList.add('opening');
+            levelName.textContent = '...';
+
+            setTimeout(() => {
+                // Определяем текущую группу по последовательности
+                const currentGroup = levelSequence[openedCases];
+                const levelsInGroup = colorGroups[currentGroup];
+
+                // Выбираем случайный уровень из текущей группы
+                const randomLevel = getRandomItem(levelsInGroup);
+                levelName.textContent = randomLevel;
+                caseElement.classList.remove('opening');
+
+                // Меняем фон
+                body.style.background = `linear-gradient(135deg, ${getBackgroundColor(randomLevel)}, #16213e)`;
+
+                // Создаём салют
+                createFireworks();
+
+                // Добавляем в результаты
+                results.push(randomLevel);
+                updateResultsList();
+
+                // Обновляем прогресс
+                openedCases++;
+                progressText.textContent = openedCases;
+                progressBar.style.width = ((openedCases / maxCases) * 100) + '%';
+
+                // Блокируем кнопку, если достигли максимума
+                if (openedCases >= maxCases) {
+                    openCaseBtn.disabled = true;
+                    openCaseBtn.textContent = 'Кейс завершён!';
+                }
+            }, 1500); // Длительность анимации
+        }
+
+        // Обновление списка результатов
+        function updateResultsList() {
+            resultsList.innerHTML = '';
+            results.forEach((level, index) => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+
+                // Добавляем цветовой индикатор
+                const group = levelSequence[index];
+                item.style.borderLeft = `4px solid ${
+                    group === 'green' ? '#00cc66' :
+            group === 'yellow' ? '#ffcc00' : '#ff3333'
+        }`;
+                item.textContent = `${index + 1}. ${level}`;
+                resultsList.appendChild(item);
+            });
+        }
+
+        // Обработчик кнопки
+        openCaseBtn.addEventListener('click', function() {
+            if (openedCases < maxCases) {
+                animateCaseOpening();
+            }
+        });
+    </script>
+</body>
+</html>
